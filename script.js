@@ -2,6 +2,8 @@
  * KASA Website JavaScript - Professional & Interactive Features
  */
 
+console.log('🚀 KASA JavaScript loaded!');
+
 // DOM Elements
 const navbar = document.querySelector('.navbar');
 const navMenu = document.querySelector('.nav-menu');
@@ -23,12 +25,30 @@ const contactForm = document.querySelector('.contact-form');
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, starting initialization...');
+    
     initializeNavigation();
     initializeScrollEffects();
     initializeFAQ();
     initializeTestimonials();
     initializeContactForm();
     initializeAnimations();
+    initializeCTAButtons();
+    initializeSocialLinks();
+    initializeEventButtons();
+    
+    // Fallback test - add direct onclick to all buttons
+    const allButtons = document.querySelectorAll('button');
+    console.log('Total buttons on page:', allButtons.length);
+    allButtons.forEach((button, index) => {
+        if (button.textContent.toLowerCase().includes('join') || 
+            button.textContent.toLowerCase().includes('community')) {
+            console.log(`Adding fallback to button ${index}:`, button.textContent.trim());
+            button.onclick = function() {
+                alert('Fallback onclick working for: ' + this.textContent);
+            };
+        }
+    });
     
     console.log('KASA Website initialized successfully');
 });
@@ -514,12 +534,349 @@ function initializeLazyLoading() {
 // Initialize lazy loading
 document.addEventListener('DOMContentLoaded', initializeLazyLoading);
 
+/**
+ * CTA Button Functions
+ */
+function initializeCTAButtons() {
+    console.log('Initializing CTA buttons...');
+    
+    // Join Community buttons
+    const joinButtons = document.querySelectorAll('.cta-button.primary, .connect-btn.primary');
+    console.log('Join buttons found:', joinButtons.length);
+    joinButtons.forEach((button, index) => {
+        console.log(`Join button ${index}:`, button.textContent.trim());
+        button.addEventListener('click', handleJoinCommunity);
+    });
+    
+    // View Events buttons
+    const eventButtons = document.querySelectorAll('.cta-button.secondary, .connect-btn.secondary');
+    console.log('Event buttons found:', eventButtons.length);
+    eventButtons.forEach((button, index) => {
+        console.log(`Event button ${index}:`, button.textContent.trim());
+        button.addEventListener('click', handleViewEvents);
+    });
+    
+    // WhatsApp group buttons
+    const whatsappButtons = document.querySelectorAll('.connect-btn.whatsapp');
+    console.log('WhatsApp buttons found:', whatsappButtons.length);
+    whatsappButtons.forEach((button, index) => {
+        console.log(`WhatsApp button ${index}:`, button.textContent.trim());
+        button.addEventListener('click', handleWhatsAppJoin);
+    });
+}
+
+function handleJoinCommunity(e) {
+    console.log('Join Community clicked');
+    e.preventDefault();
+    
+    // Simple test first
+    alert('Join Community button working!');
+    
+    // Smooth scroll to connect section
+    const connectSection = document.querySelector('#contact');
+    if (connectSection) {
+        console.log('Connect section found, scrolling...');
+        smoothScrollTo(connectSection);
+        
+        // Highlight connect section briefly
+        connectSection.style.backgroundColor = 'rgba(244, 208, 63, 0.1)';
+        setTimeout(() => {
+            connectSection.style.backgroundColor = '';
+        }, 2000);
+    } else {
+        console.log('Connect section not found');
+    }
+    
+    try {
+        showNotification('Ready to join? Check out the ways to connect with us below!', 'info');
+    } catch (error) {
+        console.error('Error showing notification:', error);
+    }
+}
+
+function handleViewEvents(e) {
+    e.preventDefault();
+    
+    // Smooth scroll to events section
+    const eventsSection = document.querySelector('#events');
+    if (eventsSection) {
+        smoothScrollTo(eventsSection);
+        
+        // Highlight events section briefly
+        eventsSection.style.backgroundColor = 'rgba(244, 208, 63, 0.1)';
+        setTimeout(() => {
+            eventsSection.style.backgroundColor = '';
+        }, 2000);
+    }
+    
+    showNotification('Check out our upcoming events below!', 'info');
+}
+
+function handleWhatsAppJoin(e) {
+    e.preventDefault();
+    
+    // WhatsApp group invite link (replace with actual link when available)
+    const whatsappGroupLink = 'https://www.instagram.com/kasa1969'; // Temporary redirect to Instagram
+    
+    // Show confirmation modal
+    const confirmJoin = confirm('Join our KASA community! We\'ll redirect you to our Instagram where you can find our WhatsApp group link and latest updates.');
+    
+    if (confirmJoin) {
+        // Open WhatsApp group link
+        window.open(whatsappGroupLink, '_blank');
+        showNotification('Redirecting to KASA Instagram for WhatsApp group access!', 'success');
+    }
+}
+
+/**
+ * Social Media Functions
+ */
+function initializeSocialLinks() {
+    const socialLinks = document.querySelectorAll('.social-quick-link, .social-link');
+    
+    socialLinks.forEach(link => {
+        // Only add JavaScript handling for links that don't have direct hrefs
+        const href = link.getAttribute('href');
+        if (!href || href === '#') {
+            link.addEventListener('click', handleSocialClick);
+        }
+    });
+}
+
+function handleSocialClick(e) {
+    e.preventDefault();
+    
+    const linkElement = e.currentTarget;
+    const platform = getSocialPlatform(linkElement);
+    
+    // Social media URLs (replace with actual KASA social media accounts)
+    const socialUrls = {
+        instagram: 'https://www.instagram.com/kasa1969',
+        tiktok: 'https://www.instagram.com/kasa1969',
+        twitter: 'https://www.instagram.com/kasa1969',
+        discord: 'https://www.instagram.com/kasa1969',
+        youtube: 'https://www.instagram.com/kasa1969'
+    };
+    
+    const url = socialUrls[platform];
+    if (url) {
+        window.open(url, '_blank');
+        showNotification(`Opening ${platform.charAt(0).toUpperCase() + platform.slice(1)}...`, 'info');
+    } else {
+        showNotification('Social media link coming soon!', 'info');
+    }
+}
+
+function getSocialPlatform(element) {
+    const classList = element.classList;
+    
+    if (classList.contains('instagram')) return 'instagram';
+    if (classList.contains('tiktok')) return 'tiktok';
+    if (classList.contains('twitter')) return 'twitter';
+    if (classList.contains('discord')) return 'discord';
+    if (element.textContent.toLowerCase().includes('youtube')) return 'youtube';
+    if (element.textContent.toLowerCase().includes('instagram')) return 'instagram';
+    if (element.textContent.toLowerCase().includes('tiktok')) return 'tiktok';
+    if (element.textContent.toLowerCase().includes('twitter')) return 'twitter';
+    if (element.textContent.toLowerCase().includes('discord')) return 'discord';
+    
+    return 'unknown';
+}
+
+/**
+ * Event Registration Functions
+ */
+function initializeEventButtons() {
+    const eventLinks = document.querySelectorAll('.event-link');
+    
+    eventLinks.forEach(link => {
+        // Only add JavaScript handling for links that don't have direct hrefs
+        const href = link.getAttribute('href');
+        if (!href || href === '#') {
+            link.addEventListener('click', handleEventInterest);
+        }
+    });
+    
+    // Media buttons - only handle those without direct links
+    const mediaButtons = document.querySelectorAll('.media-btn');
+    mediaButtons.forEach(button => {
+        const href = button.getAttribute('href');
+        if (!href || href === '#') {
+            button.addEventListener('click', handleMediaClick);
+        }
+    });
+}
+
+function handleEventInterest(e) {
+    e.preventDefault();
+    
+    const eventElement = e.currentTarget.closest('.event-item');
+    const eventTitle = eventElement ? eventElement.querySelector('.event-title')?.textContent : 'Event';
+    
+    const eventInfo = {
+        title: `Interested in ${eventTitle}?`,
+        message: "Great choice! Here's how to stay updated:",
+        steps: [
+            "Join our WhatsApp group for instant updates",
+            "Follow us on social media",
+            "Check your email for event reminders",
+            "Mark your calendar for upcoming dates"
+        ],
+        action: "Join Updates"
+    };
+    
+    showEventModal(eventInfo);
+}
+
+function handleMediaClick(e) {
+    e.preventDefault();
+    
+    const buttonText = e.currentTarget.textContent.toLowerCase();
+    
+    if (buttonText.includes('instagram')) {
+        window.open('https://instagram.com/kasa_kent', '_blank');
+    } else if (buttonText.includes('tiktok')) {
+        window.open('https://tiktok.com/@kasa_kent', '_blank');
+    } else if (buttonText.includes('youtube')) {
+        window.open('https://youtube.com/@kasa_kent', '_blank');
+    } else if (buttonText.includes('gallery')) {
+        showNotification('Photo gallery coming soon!', 'info');
+    }
+}
+
+/**
+ * Modal Functions
+ */
+function showMembershipModal(info) {
+    const modal = createModal(info);
+    document.body.appendChild(modal);
+    
+    // Add event listener for action button
+    const actionButton = modal.querySelector('.modal-action');
+    if (actionButton) {
+        actionButton.addEventListener('click', () => {
+            closeModal(modal);
+            // Redirect to contact section or external form
+            const contactSection = document.querySelector('#contact');
+            if (contactSection) {
+                smoothScrollTo(contactSection);
+            }
+        });
+    }
+}
+
+function showEventModal(info) {
+    const modal = createModal(info);
+    document.body.appendChild(modal);
+    
+    // Add event listener for action button
+    const actionButton = modal.querySelector('.modal-action');
+    if (actionButton) {
+        actionButton.addEventListener('click', () => {
+            closeModal(modal);
+            handleWhatsAppJoin({ preventDefault: () => {} });
+        });
+    }
+}
+
+function createModal(info) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>${info.title}</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>${info.message}</p>
+                <ul class="modal-steps">
+                    ${info.steps.map(step => `<li>${step}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-action cta-button primary">${info.action}</button>
+                <button class="modal-cancel">Maybe Later</button>
+            </div>
+        </div>
+    `;
+    
+    // Add styles
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.style.cssText = `
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    `;
+    
+    // Add event listeners
+    const closeButton = modal.querySelector('.modal-close');
+    const cancelButton = modal.querySelector('.modal-cancel');
+    
+    [closeButton, cancelButton].forEach(button => {
+        if (button) {
+            button.addEventListener('click', () => closeModal(modal));
+        }
+    });
+    
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal(modal);
+        }
+    });
+    
+    // Animate in
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'scale(1)';
+    }, 10);
+    
+    return modal;
+}
+
+function closeModal(modal) {
+    modal.style.opacity = '0';
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.style.transform = 'scale(0.9)';
+    
+    setTimeout(() => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
+    }, 300);
+}
+
 // Export functions for testing (if needed)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         toggleMobileMenu,
         toggleFAQItem,
         handleFormSubmit,
-        showNotification
+        showNotification,
+        handleJoinCommunity,
+        handleViewEvents,
+        handleWhatsAppJoin
     };
 }
