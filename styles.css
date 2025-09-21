@@ -818,6 +818,7 @@ p {
     
     .contact-grid {
         grid-template-columns: 1fr;
+        justify-items: center;
     }
     
     .events-grid {
@@ -2148,6 +2149,9 @@ p {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--space-xl);
+    justify-items: center;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .contact-item {
