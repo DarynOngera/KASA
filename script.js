@@ -73,20 +73,25 @@ function initializeNavigation() {
 
 function toggleMobileMenu() {
     if (navMenu && navToggle) {
-        navMenu.classList.toggle('active');
-        navToggle.classList.toggle('active');
+        const isActive = navMenu.classList.contains('active');
         
-        // Animate hamburger
-        const spans = navToggle.querySelectorAll('span');
-        spans.forEach((span, index) => {
-            if (navToggle.classList.contains('active')) {
-                if (index === 0) span.style.transform = 'rotate(45deg) translate(5px, 5px)';
-                if (index === 1) span.style.opacity = '0';
-                if (index === 2) span.style.transform = 'rotate(-45deg) translate(7px, -6px)';
-            } else {
-                span.style.transform = 'none';
-                span.style.opacity = '1';
-            }
+        if (isActive) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    }
+}
+
+function openMobileMenu() {
+    if (navMenu && navToggle) {
+        navMenu.classList.add('active');
+        navToggle.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Add click listener to close menu when clicking on links
+        navLinks.forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
         });
     }
 }
@@ -95,12 +100,11 @@ function closeMobileMenu() {
     if (navMenu && navToggle) {
         navMenu.classList.remove('active');
         navToggle.classList.remove('active');
+        document.body.style.overflow = ''; // Restore background scrolling
         
-        // Reset hamburger
-        const spans = navToggle.querySelectorAll('span');
-        spans.forEach(span => {
-            span.style.transform = 'none';
-            span.style.opacity = '1';
+        // Remove click listeners from nav links
+        navLinks.forEach(link => {
+            link.removeEventListener('click', closeMobileMenu);
         });
     }
 }
@@ -436,12 +440,45 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && navMenu && navMenu.classList.contains('active')) {
         closeMobileMenu();
     }
-    
-    // FAQ navigation with Enter key
-    if (e.key === 'Enter' && e.target.classList.contains('faq-question')) {
-        e.target.click();
-    }
 });
+
+// Touch handling for mobile
+let touchStartY = 0;
+let touchEndY = 0;
+
+document.addEventListener('touchstart', (e) => {
+    touchStartY = e.changedTouches[0].screenY;
+});
+
+document.addEventListener('touchend', (e) => {
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    const swipeDistance = touchStartY - touchEndY;
+    
+    // Close mobile menu on upward swipe
+    if (swipeDistance > swipeThreshold && navMenu && navMenu.classList.contains('active')) {
+        closeMobileMenu();
+    }
+}
+
+// Improved viewport handling for mobile
+function handleViewportChange() {
+    // Close mobile menu on orientation change
+    if (navMenu && navMenu.classList.contains('active')) {
+        closeMobileMenu();
+    }
+    
+    // Update viewport height for mobile browsers
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+window.addEventListener('orientationchange', handleViewportChange);
+window.addEventListener('resize', debounce(handleViewportChange, 250));
 
 // Smooth scroll behavior for all internal links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
