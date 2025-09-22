@@ -407,9 +407,80 @@
         </div>
     </section>
 
+    <!-- Stay Updated Section -->
+    <section class="stay-updated" id="stay-updated">
+        <div class="container">
+            <div class="stay-updated-content">
+                <h2 class="section-title">Stay Updated</h2>
+                <p class="section-subtitle">Never miss a KASA event! Choose how you'd like to stay informed about our upcoming activities.</p>
+                
+                <div class="update-options">
+                    <div class="update-card">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <h3>Calendar Sync</h3>
+                        <p>Add KASA events directly to your calendar app</p>
+                        <div class="calendar-buttons">
+                            <button class="update-btn primary" id="downloadIcal">
+                                <i class="fas fa-download"></i> Download .ics File
+                            </button>
+                            <button class="update-btn secondary" id="addToGoogleCalendar">
+                                <i class="fab fa-google"></i> Add to Google Calendar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="update-card">
+                        <div class="card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email Updates</h3>
+                        <p>Get notified about new events and important announcements</p>
+                        <form class="email-subscription-form" id="emailSubscriptionForm">
+                            <div class="input-group">
+                                <input type="email" id="subscriptionEmail" placeholder="Enter your email address" required>
+                                <button type="submit" class="update-btn primary">
+                                    <i class="fas fa-bell"></i> Subscribe
+                                </button>
+                            </div>
+                            <div class="subscription-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="eventNotifications" checked>
+                                    <span class="checkmark"></span>
+                                    Event notifications
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="weeklyDigest">
+                                    <span class="checkmark"></span>
+                                    Weekly digest
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="update-card">
+                        <div class="card-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Quick Access</h3>
+                        <p>Bookmark our events calendar for instant access</p>
+                        <div class="quick-access-buttons">
+                            <button class="update-btn secondary" id="bookmarkCalendar">
+                                <i class="fas fa-bookmark"></i> Bookmark Calendar
+                            </button>
+                            <button class="update-btn secondary" id="shareCalendar">
+                                <i class="fas fa-share"></i> Share with Friends
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Connect Section -->
-    <section class="connect" id="contact">
+    <section class="connect" id="connect">
         <div class="connect-container">
             <div class="connect-header">
                 <h2 class="connect-title">Join the KASA Family</h2>

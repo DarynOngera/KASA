@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSocialLinks();
     initializeEventButtons();
     initializeCalendarModal();
+    initializeStayUpdated();
     
     console.log('KASA Website initialized successfully');
     
@@ -193,9 +194,27 @@ function updateNavbarOnScroll() {
  * Scroll Effects Functions
  */
 function initializeScrollEffects() {
-    // Add scroll-based effects like navbar changes, etc.
-    // This function can be expanded later for scroll animations
+    // Simple scroll effects for navbar only - no animations
+    initializeNavbarScrollEffects();
+    
     console.log('Scroll effects initialized');
+}
+
+function initializeNavbarScrollEffects() {
+    const navbar = document.querySelector('.navbar');
+    
+    if (!navbar) return;
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Add/remove scrolled class for subtle navbar styling changes only
+        if (scrollTop > 100) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
 }
 
 /**
@@ -1163,6 +1182,249 @@ window.addCalendarEvent = addCalendarEvent;
 window.removeCalendarEvent = removeCalendarEvent;
 window.updateCalendarEvent = updateCalendarEvent;
 window.getEventsForDate = getEventsForDate;
+
+/**
+ * Stay Updated Functions - Calendar Sync & Email Subscriptions
+ */
+function initializeStayUpdated() {
+    // iCalendar download button
+    const icalButton = document.getElementById('downloadIcal');
+    if (icalButton) {
+        icalButton.addEventListener('click', downloadICalendar);
+    }
+    
+    // Google Calendar button
+    const googleCalButton = document.getElementById('addToGoogleCalendar');
+    if (googleCalButton) {
+        googleCalButton.addEventListener('click', addToGoogleCalendar);
+    }
+    
+    // Email subscription form
+    const emailForm = document.getElementById('emailSubscriptionForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', handleEmailSubscription);
+    }
+    
+    // Bookmark calendar button
+    const bookmarkButton = document.getElementById('bookmarkCalendar');
+    if (bookmarkButton) {
+        bookmarkButton.addEventListener('click', bookmarkCalendar);
+    }
+    
+    // Share calendar button
+    const shareButton = document.getElementById('shareCalendar');
+    if (shareButton) {
+        shareButton.addEventListener('click', shareCalendar);
+    }
+}
+
+// Generate and download iCalendar (.ics) file
+function downloadICalendar() {
+    const icsContent = generateICSContent();
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'KASA-Events.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Calendar file downloaded! Import it to your calendar app.', 'success');
+}
+
+// Generate ICS (iCalendar) content
+function generateICSContent() {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    let icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//KASA//KASA Events//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:KASA Events',
+        'X-WR-CALDESC:Kenyan American Student Association Events'
+    ].join('\r\n') + '\r\n';
+    
+    calendarEvents.forEach((event, index) => {
+        const eventDate = new Date(event.date + 'T18:00:00'); // Default to 6 PM
+        const startTime = eventDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const endDate = new Date(eventDate.getTime() + 3 * 60 * 60 * 1000); // 3 hours duration
+        const endTime = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        
+        icsContent += [
+            'BEGIN:VEVENT',
+            `UID:kasa-event-${index}-${timestamp}@kasa.org`,
+            `DTSTAMP:${timestamp}`,
+            `DTSTART:${startTime}`,
+            `DTEND:${endTime}`,
+            `SUMMARY:${event.title}`,
+            `DESCRIPTION:${event.description}`,
+            'LOCATION:Kent State University',
+            'STATUS:CONFIRMED',
+            'TRANSP:OPAQUE',
+            'END:VEVENT'
+        ].join('\r\n') + '\r\n';
+    });
+    
+    icsContent += 'END:VCALENDAR\r\n';
+    return icsContent;
+}
+
+// Add events to Google Calendar
+function addToGoogleCalendar() {
+    if (calendarEvents.length === 0) {
+        showNotification('No events available to add to Google Calendar.', 'info');
+        return;
+    }
+    
+    // For multiple events, we'll create a Google Calendar URL for the first event
+    // and show instructions for adding all events
+    const firstEvent = calendarEvents[0];
+    const eventDate = new Date(firstEvent.date + 'T18:00:00');
+    const endDate = new Date(eventDate.getTime() + 3 * 60 * 60 * 1000);
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(firstEvent.title)}&dates=${eventDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(firstEvent.description)}&location=${encodeURIComponent('Kent State University')}`;
+    
+    window.open(googleCalendarUrl, '_blank');
+    
+    if (calendarEvents.length > 1) {
+        showNotification(`Added "${firstEvent.title}" to Google Calendar. Download the .ics file to add all ${calendarEvents.length} events at once.`, 'info');
+    } else {
+        showNotification('Event added to Google Calendar!', 'success');
+    }
+}
+
+// Handle email subscription
+function handleEmailSubscription(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('subscriptionEmail').value;
+    const eventNotifications = document.getElementById('eventNotifications').checked;
+    const weeklyDigest = document.getElementById('weeklyDigest').checked;
+    
+    if (!email) {
+        showNotification('Please enter a valid email address.', 'error');
+        return;
+    }
+    
+    // In a real application, you would send this data to your backend
+    const subscriptionData = {
+        email: email,
+        eventNotifications: eventNotifications,
+        weeklyDigest: weeklyDigest,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Store locally for demo purposes
+    localStorage.setItem('kasaEmailSubscription', JSON.stringify(subscriptionData));
+    
+    // Clear form
+    document.getElementById('subscriptionEmail').value = '';
+    
+    showNotification('Successfully subscribed to KASA updates! You\'ll receive notifications at ' + email, 'success');
+}
+
+// Bookmark calendar functionality
+function bookmarkCalendar() {
+    const currentUrl = window.location.href;
+    const calendarUrl = currentUrl + '#events';
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'KASA Events Calendar',
+            text: 'Bookmark the KASA Events Calendar to stay updated on all our activities!',
+            url: calendarUrl
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(calendarUrl).then(() => {
+            showNotification('Calendar link copied to clipboard! Bookmark it for quick access.', 'success');
+        }).catch(() => {
+            showNotification('Please bookmark this page to quickly access the KASA events calendar.', 'info');
+        });
+    }
+}
+
+// Share calendar functionality
+function shareCalendar() {
+    const currentUrl = window.location.href;
+    const shareText = 'Check out the KASA Events Calendar and never miss an event!';
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'KASA Events Calendar',
+            text: shareText,
+            url: currentUrl
+        });
+    } else {
+        // Fallback: copy to clipboard
+        const shareContent = `${shareText} ${currentUrl}`;
+        navigator.clipboard.writeText(shareContent).then(() => {
+            showNotification('Share link copied to clipboard!', 'success');
+        }).catch(() => {
+            // Manual share options
+            const shareModal = createShareModal(currentUrl);
+            document.body.appendChild(shareModal);
+        });
+    }
+}
+
+// Create share modal for browsers without native sharing
+function createShareModal(url) {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal-overlay';
+    modal.innerHTML = `
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>Share KASA Events Calendar</h3>
+                <button class="share-modal-close">&times;</button>
+            </div>
+            <div class="share-modal-body">
+                <p>Share the KASA Events Calendar with your friends:</p>
+                <div class="share-options">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" class="share-btn facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('Check out the KASA Events Calendar!')}" target="_blank" class="share-btn twitter">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://wa.me/?text=${encodeURIComponent('Check out the KASA Events Calendar! ' + url)}" target="_blank" class="share-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+                <div class="share-link">
+                    <input type="text" value="${url}" readonly>
+                    <button class="copy-link-btn">Copy Link</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    const closeBtn = modal.querySelector('.share-modal-close');
+    const copyBtn = modal.querySelector('.copy-link-btn');
+    
+    closeBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+    
+    copyBtn.addEventListener('click', () => {
+        const input = modal.querySelector('input');
+        input.select();
+        document.execCommand('copy');
+        showNotification('Link copied to clipboard!', 'success');
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+    
+    return modal;
+}
 
 // Calendar modal is now initialized in the main DOMContentLoaded event listener above
 
