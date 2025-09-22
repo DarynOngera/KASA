@@ -2142,6 +2142,7 @@ p {
     text-decoration: none;
     transition: var(--transition-smooth);
     color: var(--cream-white);
+    aspect-ratio: 1;
 }
 
 .social-quick-link.instagram {
