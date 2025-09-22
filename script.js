@@ -36,21 +36,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCTAButtons();
     initializeSocialLinks();
     initializeEventButtons();
-    
-    // Fallback test - add direct onclick to all buttons
-    const allButtons = document.querySelectorAll('button');
-    console.log('Total buttons on page:', allButtons.length);
-    allButtons.forEach((button, index) => {
-        if (button.textContent.toLowerCase().includes('join') || 
-            button.textContent.toLowerCase().includes('community')) {
-            console.log(`Adding fallback to button ${index}:`, button.textContent.trim());
-            button.onclick = function() {
-                alert('Fallback onclick working for: ' + this.textContent);
-            };
-        }
-    });
+    initializeCalendarModal();
     
     console.log('KASA Website initialized successfully');
+    
+    // Make test functions available globally
+    window.testCalendar = function() {
+        console.log('Testing calendar modal...');
+        openCalendarModal();
+    };
+    
+    window.testClose = function() {
+        console.log('Testing close modal...');
+        closeCalendarModal();
+    };
 });
 
 /**
@@ -188,6 +187,15 @@ function updateNavbarOnScroll() {
         navbar.style.background = 'rgba(254, 254, 254, 0.95)';
         navbar.style.boxShadow = 'none';
     }
+}
+
+/**
+ * Scroll Effects Functions
+ */
+function initializeScrollEffects() {
+    // Add scroll-based effects like navbar changes, etc.
+    // This function can be expanded later for scroll animations
+    console.log('Scroll effects initialized');
 }
 
 /**
@@ -538,29 +546,36 @@ document.addEventListener('DOMContentLoaded', initializeLazyLoading);
  * CTA Button Functions
  */
 function initializeCTAButtons() {
-    console.log('Initializing CTA buttons...');
-    
     // Join Community buttons
     const joinButtons = document.querySelectorAll('.cta-button.primary, .connect-btn.primary');
-    console.log('Join buttons found:', joinButtons.length);
-    joinButtons.forEach((button, index) => {
-        console.log(`Join button ${index}:`, button.textContent.trim());
+    joinButtons.forEach((button) => {
         button.addEventListener('click', handleJoinCommunity);
     });
     
-    // View Events buttons
-    const eventButtons = document.querySelectorAll('.cta-button.secondary, .connect-btn.secondary');
-    console.log('Event buttons found:', eventButtons.length);
-    eventButtons.forEach((button, index) => {
-        console.log(`Event button ${index}:`, button.textContent.trim());
+    // View Events buttons - try multiple selectors to ensure we find the button
+    const eventButtons1 = document.querySelectorAll('.cta-button.secondary, .connect-btn.secondary');
+    const eventButtons2 = document.querySelectorAll('button');
+    
+    // Add event listeners to buttons found by first selector
+    eventButtons1.forEach((button) => {
         button.addEventListener('click', handleViewEvents);
+    });
+    
+    // Also add to any button containing "View Events" text as fallback
+    eventButtons2.forEach((button) => {
+        if (button.textContent.toLowerCase().includes('view events')) {
+            button.addEventListener('click', handleViewEvents);
+            // Also add direct onclick as backup
+            button.onclick = function(e) {
+                e.preventDefault();
+                openCalendarModal();
+            };
+        }
     });
     
     // WhatsApp group buttons
     const whatsappButtons = document.querySelectorAll('.connect-btn.whatsapp');
-    console.log('WhatsApp buttons found:', whatsappButtons.length);
-    whatsappButtons.forEach((button, index) => {
-        console.log(`WhatsApp button ${index}:`, button.textContent.trim());
+    whatsappButtons.forEach((button) => {
         button.addEventListener('click', handleWhatsAppJoin);
     });
 }
@@ -596,20 +611,7 @@ function handleJoinCommunity(e) {
 
 function handleViewEvents(e) {
     e.preventDefault();
-    
-    // Smooth scroll to events section
-    const eventsSection = document.querySelector('#events');
-    if (eventsSection) {
-        smoothScrollTo(eventsSection);
-        
-        // Highlight events section briefly
-        eventsSection.style.backgroundColor = 'rgba(244, 208, 63, 0.1)';
-        setTimeout(() => {
-            eventsSection.style.backgroundColor = '';
-        }, 2000);
-    }
-    
-    showNotification('Check out our upcoming events below!', 'info');
+    openCalendarModal();
 }
 
 function handleWhatsAppJoin(e) {
@@ -868,6 +870,326 @@ function closeModal(modal) {
     }, 300);
 }
 
+/**
+ * Calendar Modal Functions
+ */
+let currentCalendarDate = new Date();
+
+// KASA Events Calendar - Update this array to add/remove/modify events
+const calendarEvents = [
+    {
+        date: '2024-12-15',
+        title: 'KASA Holiday Party',
+        description: 'Join us for our annual holiday celebration with food, music, and fun!'
+    },
+    {
+        date: '2024-12-20',
+        title: 'Study Session',
+        description: 'Final exam prep with snacks and good vibes. Bring your books!'
+    },
+    {
+        date: '2025-01-10',
+        title: 'New Year Kickoff',
+        description: 'Start the new year with KASA! Planning session for spring events.'
+    },
+    {
+        date: '2025-01-25',
+        title: 'Cultural Night',
+        description: 'Celebrate African cultures with traditional food, music, and dance.'
+    },
+    {
+        date: '2025-02-14',
+        title: 'Valentine\'s Day Social',
+        description: 'Love is in the air! Join us for a fun social event.'
+    },
+    {
+        date: '2025-02-28',
+        title: 'Game Night',
+        description: 'Board games, video games, and African games. Fun for everyone!'
+    }
+    // Add new events here following the same format:
+    // {
+    //     date: 'YYYY-MM-DD',
+    //     title: 'Event Title',
+    //     description: 'Event description that appears when clicked'
+    // }
+];
+
+function openCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        generateCalendar();
+        updateEventsPreview();
+    }
+}
+
+function closeCalendarModal() {
+    const modal = document.getElementById('calendarModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function generateCalendar() {
+    const monthYear = document.getElementById('calendarMonthYear');
+    const calendarDays = document.getElementById('calendarDays');
+    
+    if (!monthYear || !calendarDays) return;
+    
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    // Update month/year display
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    monthYear.textContent = `${monthNames[month]} ${year}`;
+    
+    // Clear previous calendar
+    calendarDays.innerHTML = '';
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    // Add previous month's trailing days
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const dayElement = createCalendarDay(daysInPrevMonth - i, true, year, month - 1);
+        calendarDays.appendChild(dayElement);
+    }
+    
+    // Add current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = createCalendarDay(day, false, year, month);
+        calendarDays.appendChild(dayElement);
+    }
+    
+    // Add next month's leading days to fill the grid
+    const totalCells = calendarDays.children.length;
+    const remainingCells = 42 - totalCells; // 6 rows × 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+        const dayElement = createCalendarDay(day, true, year, month + 1);
+        calendarDays.appendChild(dayElement);
+    }
+}
+
+function createCalendarDay(day, isOtherMonth, year, month) {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'calendar-day';
+    dayElement.textContent = day;
+    
+    if (isOtherMonth) {
+        dayElement.classList.add('other-month');
+    }
+    
+    // Check if it's today
+    const today = new Date();
+    const dayDate = new Date(year, month, day);
+    if (!isOtherMonth && 
+        dayDate.getDate() === today.getDate() && 
+        dayDate.getMonth() === today.getMonth() && 
+        dayDate.getFullYear() === today.getFullYear()) {
+        dayElement.classList.add('today');
+    }
+    
+    // Check if it's an event day
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasEvent = calendarEvents.some(event => event.date === dateString);
+    if (hasEvent && !isOtherMonth) {
+        dayElement.classList.add('event-day');
+        
+        // Add click handler to show event details
+        dayElement.addEventListener('click', () => showEventDetails(dateString));
+    }
+    
+    return dayElement;
+}
+
+function showEventDetails(dateString) {
+    const events = calendarEvents.filter(event => event.date === dateString);
+    if (events.length === 0) return;
+    
+    const event = events[0]; // Show first event if multiple
+    const eventDate = new Date(dateString);
+    const formattedDate = eventDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    showNotification(`${event.title} - ${formattedDate}: ${event.description}`, 'info');
+}
+
+function updateEventsPreview() {
+    const eventsList = document.getElementById('eventsList');
+    if (!eventsList) return;
+    
+    // Get upcoming events (next 3 events from today)
+    const today = new Date();
+    const upcomingEvents = calendarEvents
+        .filter(event => new Date(event.date) >= today)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 3);
+    
+    eventsList.innerHTML = '';
+    
+    if (upcomingEvents.length === 0) {
+        eventsList.innerHTML = '<p style="color: var(--soft-gray); text-align: center;">No upcoming events scheduled.</p>';
+        return;
+    }
+    
+    upcomingEvents.forEach(event => {
+        const eventElement = document.createElement('div');
+        eventElement.className = 'event-preview-item';
+        
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        eventElement.innerHTML = `
+            <div class="event-preview-date">${formattedDate}</div>
+            <div class="event-preview-title">${event.title}</div>
+            <div class="event-preview-description">${event.description}</div>
+        `;
+        
+        eventsList.appendChild(eventElement);
+    });
+}
+
+function initializeCalendarModal() {
+    // Close modal button
+    const closeButton = document.getElementById('closeCalendarModal');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeCalendarModal);
+        // Also add direct onclick as backup
+        closeButton.onclick = function(e) {
+            e.preventDefault();
+            closeCalendarModal();
+        };
+    }
+    
+    // Navigation buttons
+    const prevButton = document.getElementById('prevMonth');
+    const nextButton = document.getElementById('nextMonth');
+    
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            generateCalendar();
+        });
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            generateCalendar();
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (calendarModal) {
+        calendarModal.addEventListener('click', (e) => {
+            if (e.target === calendarModal) {
+                closeCalendarModal();
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && calendarModal && calendarModal.classList.contains('active')) {
+            closeCalendarModal();
+        }
+    });
+}
+
+/**
+ * Event Management Functions
+ * Use these functions to add, remove, or update events programmatically
+ */
+
+// Add a new event to the calendar
+function addCalendarEvent(date, title, description) {
+    const newEvent = {
+        date: date, // Format: 'YYYY-MM-DD'
+        title: title,
+        description: description
+    };
+    
+    calendarEvents.push(newEvent);
+    
+    // Refresh calendar if modal is open
+    const modal = document.getElementById('calendarModal');
+    if (modal && modal.classList.contains('active')) {
+        generateCalendar();
+        updateEventsPreview();
+    }
+    
+    console.log('Event added:', newEvent);
+}
+
+// Remove an event by title
+function removeCalendarEvent(title) {
+    const index = calendarEvents.findIndex(event => event.title === title);
+    if (index > -1) {
+        const removedEvent = calendarEvents.splice(index, 1)[0];
+        
+        // Refresh calendar if modal is open
+        const modal = document.getElementById('calendarModal');
+        if (modal && modal.classList.contains('active')) {
+            generateCalendar();
+            updateEventsPreview();
+        }
+        
+        console.log('Event removed:', removedEvent);
+        return true;
+    }
+    return false;
+}
+
+// Update an existing event
+function updateCalendarEvent(oldTitle, newDate, newTitle, newDescription) {
+    const event = calendarEvents.find(event => event.title === oldTitle);
+    if (event) {
+        event.date = newDate;
+        event.title = newTitle;
+        event.description = newDescription;
+        
+        // Refresh calendar if modal is open
+        const modal = document.getElementById('calendarModal');
+        if (modal && modal.classList.contains('active')) {
+            generateCalendar();
+            updateEventsPreview();
+        }
+        
+        console.log('Event updated:', event);
+        return true;
+    }
+    return false;
+}
+
+// Get all events for a specific date
+function getEventsForDate(date) {
+    return calendarEvents.filter(event => event.date === date);
+}
+
+// Make functions globally available for easy access
+window.addCalendarEvent = addCalendarEvent;
+window.removeCalendarEvent = removeCalendarEvent;
+window.updateCalendarEvent = updateCalendarEvent;
+window.getEventsForDate = getEventsForDate;
+
+// Calendar modal is now initialized in the main DOMContentLoaded event listener above
+
 // Export functions for testing (if needed)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -877,6 +1199,8 @@ if (typeof module !== 'undefined' && module.exports) {
         showNotification,
         handleJoinCommunity,
         handleViewEvents,
-        handleWhatsAppJoin
+        handleWhatsAppJoin,
+        openCalendarModal,
+        closeCalendarModal
     };
 }
