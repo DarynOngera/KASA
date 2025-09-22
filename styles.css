@@ -1276,6 +1276,44 @@ p {
     }
 }
 
+/* Instagram Embed Styles */
+.instagram-media {
+    max-width: 400px !important;
+    min-width: 300px !important;
+    width: 100% !important;
+    margin: var(--space-lg) auto !important;
+}
+
+/* Hide Instagram caption/description */
+.instagram-media p {
+    display: none !important;
+}
+
+/* Hide the bottom text area with caption */
+.instagram-media div[style*="flex-direction: column"]:last-child {
+    display: none !important;
+}
+
+/* Hide any text content that might contain captions */
+.instagram-media div[style*="margin-bottom: 24px"] {
+    display: none !important;
+}
+
+/* Responsive Instagram embed */
+@media (max-width: 768px) {
+    .instagram-media {
+        max-width: 320px !important;
+        min-width: 280px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .instagram-media {
+        max-width: 280px !important;
+        min-width: 250px !important;
+    }
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
     :root {
