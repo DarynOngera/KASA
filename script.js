@@ -878,35 +878,11 @@ let currentCalendarDate = new Date();
 // KASA Events Calendar - Update this array to add/remove/modify events
 const calendarEvents = [
     {
-        date: '2024-12-15',
-        title: 'KASA Holiday Party',
-        description: 'Join us for our annual holiday celebration with food, music, and fun!'
+        date: '2025-10-11',
+        title: 'Homecoming Day  ',
+        description: 'Join us for our annual homecoming celebration with food, music, and fun!'
     },
-    {
-        date: '2024-12-20',
-        title: 'Study Session',
-        description: 'Final exam prep with snacks and good vibes. Bring your books!'
-    },
-    {
-        date: '2025-01-10',
-        title: 'New Year Kickoff',
-        description: 'Start the new year with KASA! Planning session for spring events.'
-    },
-    {
-        date: '2025-01-25',
-        title: 'Cultural Night',
-        description: 'Celebrate African cultures with traditional food, music, and dance.'
-    },
-    {
-        date: '2025-02-14',
-        title: 'Valentine\'s Day Social',
-        description: 'Love is in the air! Join us for a fun social event.'
-    },
-    {
-        date: '2025-02-28',
-        title: 'Game Night',
-        description: 'Board games, video games, and African games. Fun for everyone!'
-    }
+
     // Add new events here following the same format:
     // {
     //     date: 'YYYY-MM-DD',
