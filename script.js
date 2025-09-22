@@ -603,11 +603,8 @@ function handleJoinCommunity(e) {
     console.log('Join Community clicked');
     e.preventDefault();
     
-    // Simple test first
-    alert('Join Community button working!');
-    
     // Smooth scroll to connect section
-    const connectSection = document.querySelector('#contact');
+    const connectSection = document.querySelector('#connect');
     if (connectSection) {
         console.log('Connect section found, scrolling...');
         smoothScrollTo(connectSection);
